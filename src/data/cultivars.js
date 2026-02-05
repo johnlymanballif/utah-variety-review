@@ -119,14 +119,14 @@ export const cultivars = [
 export const cropTypes = [...new Set(cultivars.map(c => c.crop_type))].sort();
 
 export const cropCategories = [
-  { name: 'Tomatoes', types: ['Tomato'], icon: '🍅', count: 25 },
-  { name: 'Peppers', types: ['Pepper'], icon: '🌶️', count: 15 },
-  { name: 'Squash', types: ['Squash'], icon: '🎃', count: 12 },
-  { name: 'Beans', types: ['Bean'], icon: '🫘', count: 10 },
-  { name: 'Greens', types: ['Spinach', 'Kale', 'Lettuce', 'Chard', 'Arugula', 'Mache', 'Asian Green'], icon: '🥬', count: 12 },
-  { name: 'Brassicas', types: ['Cabbage', 'Broccoli', 'Turnip', 'Cauliflower', 'Brussels Sprouts', 'Kohlrabi', 'Collards'], icon: '🥦', count: 10 },
-  { name: 'Root Crops', types: ['Carrot', 'Beet', 'Radish', 'Rutabaga'], icon: '🥕', count: 8 },
-  { name: 'Alliums', types: ['Onion', 'Garlic', 'Green Onion', 'Leek'], icon: '🧅', count: 8 },
+  { name: 'Tomatoes', types: ['Tomato'], icon: '🍅', count: 25, image: '/crops/tomato.jpg' },
+  { name: 'Peppers', types: ['Pepper'], icon: '🌶️', count: 15, image: '/crops/pepper.jpg' },
+  { name: 'Squash', types: ['Squash'], icon: '🎃', count: 12, image: '/crops/squash.jpg' },
+  { name: 'Beans', types: ['Bean'], icon: '🫘', count: 10, image: '/crops/beans.jpg' },
+  { name: 'Greens', types: ['Spinach', 'Kale', 'Lettuce', 'Chard', 'Arugula', 'Mache', 'Asian Green'], icon: '🥬', count: 12, image: '/crops/greens.jpg' },
+  { name: 'Brassicas', types: ['Cabbage', 'Broccoli', 'Turnip', 'Cauliflower', 'Brussels Sprouts', 'Kohlrabi', 'Collards'], icon: '🥦', count: 10, image: '/crops/brassicas.jpg' },
+  { name: 'Root Crops', types: ['Carrot', 'Beet', 'Radish', 'Rutabaga'], icon: '🥕', count: 8, image: '/crops/roots.jpg' },
+  { name: 'Alliums', types: ['Onion', 'Garlic', 'Green Onion', 'Leek'], icon: '🧅', count: 8, image: '/crops/alliums.jpg' },
 ];
 
 export const regions = [

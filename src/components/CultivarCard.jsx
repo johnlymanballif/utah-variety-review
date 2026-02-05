@@ -1,59 +1,89 @@
 import { Link } from 'react-router-dom';
-import { MessageSquare, ThumbsUp } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Clock, ArrowRight } from 'lucide-react';
 import { StarRating } from './StarRating';
 import { useApp } from '../context/AppContext';
+import { cropCategories } from '../data/cultivars';
+
+function getCropImage(cropType) {
+  const category = cropCategories.find(cat => cat.types.includes(cropType));
+  return category?.image || '/crops/tomato.jpg';
+}
 
 export function CultivarCard({ cultivar }) {
   const { getCultivarStats } = useApp();
   const stats = cultivar.stats || getCultivarStats(cultivar.id);
+  const cropImage = getCropImage(cultivar.crop_type);
 
   return (
     <Link
       to={`/cultivar/${cultivar.id}`}
-      className="block bg-white rounded-xl border border-stone-200 p-4 hover:border-green-300 hover:shadow-md transition-all"
+      className="group card overflow-hidden flex flex-col"
     >
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h3 className="font-semibold text-stone-900">{cultivar.name}</h3>
-          <p className="text-sm text-stone-500">{cultivar.crop_type} &middot; {cultivar.crop_subtype}</p>
-        </div>
+      {/* Image */}
+      <div className="relative h-32 overflow-hidden">
+        <img
+          src={cropImage}
+          alt={cultivar.crop_type}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         {cultivar.open_pollinated && (
-          <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-medium">OP</span>
+          <span className="absolute top-2 right-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">
+            Open Pollinated
+          </span>
         )}
+        <div className="absolute bottom-2 left-3 right-3">
+          <h3 className="font-bold text-white text-lg leading-tight">{cultivar.name}</h3>
+          <p className="text-sm text-white/80">{cultivar.crop_type} &middot; {cultivar.crop_subtype}</p>
+        </div>
       </div>
 
-      {stats ? (
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-2">
-            <StarRating rating={stats.avgRating} size={14} />
-            <span className="text-sm text-stone-600">{stats.avgRating.toFixed(1)}</span>
-          </div>
-          <div className="flex items-center gap-4 text-sm text-stone-500">
-            <span className="flex items-center gap-1">
-              <MessageSquare size={14} />
-              {stats.reviewCount} {stats.reviewCount === 1 ? 'review' : 'reviews'}
-            </span>
-            <span className="flex items-center gap-1">
-              <ThumbsUp size={14} />
-              {stats.wouldGrowAgainPct}% grow again
-            </span>
-          </div>
-          {stats.topAttributes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1">
-              {stats.topAttributes.map(attr => (
-                <span key={attr} className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
-                  {attr}
-                </span>
-              ))}
+      {/* Content */}
+      <div className="p-4 flex-1 flex flex-col">
+        {stats ? (
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <StarRating rating={stats.avgRating} size={14} />
+                <span className="text-sm font-semibold text-foreground">{stats.avgRating.toFixed(1)}</span>
+              </div>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MessageSquare size={12} />
+                {stats.reviewCount}
+              </span>
             </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-stone-400 mt-3 italic">No reviews yet</p>
-      )}
+            
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 text-sm text-primary">
+                <ThumbsUp size={14} />
+                <span className="font-medium">{stats.wouldGrowAgainPct}%</span>
+              </div>
+              <span className="text-xs text-muted-foreground">would grow again</span>
+            </div>
 
-      <div className="mt-3 pt-2 border-t border-stone-100 text-xs text-stone-400">
-        {cultivar.days_to_maturity} days to maturity
+            {stats.topAttributes.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {stats.topAttributes.slice(0, 2).map(attr => (
+                  <span key={attr} className="text-xs bg-accent text-accent-foreground px-2 py-0.5 rounded-full">
+                    {attr}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground italic flex-1">No reviews yet</p>
+        )}
+
+        <div className="flex items-center justify-between pt-3 mt-3 border-t border-border">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock size={12} />
+            {cultivar.days_to_maturity} days
+          </span>
+          <span className="flex items-center gap-1 text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            View details <ArrowRight size={12} />
+          </span>
+        </div>
       </div>
     </Link>
   );

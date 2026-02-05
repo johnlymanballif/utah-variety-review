@@ -6,6 +6,7 @@ export const users = [
     zone: '6b',
     growing_context: 'Home garden',
     avatar: 'SM',
+    avatarUrl: '/avatars/sarah.jpg',
   },
   {
     id: 'user-mike',
@@ -14,6 +15,7 @@ export const users = [
     zone: '5a',
     growing_context: 'Market farm',
     avatar: 'MT',
+    avatarUrl: '/avatars/mike.jpg',
   },
   {
     id: 'user-elena',
@@ -22,6 +24,7 @@ export const users = [
     zone: '9a',
     growing_context: 'Home garden',
     avatar: 'ER',
+    avatarUrl: '/avatars/elena.jpg',
   },
   {
     id: 'user-guest',
@@ -30,5 +33,6 @@ export const users = [
     zone: '6b',
     growing_context: 'Home garden',
     avatar: 'G',
+    avatarUrl: null,
   },
 ];
