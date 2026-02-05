@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const steps = [
@@ -70,30 +70,43 @@ export function QuickTour() {
   return (
     <>
       {/* Overlay */}
-      <div className="fixed inset-0 bg-black/20 z-[100]" onClick={() => setTourActive(false)} />
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100]" onClick={() => setTourActive(false)} />
 
       {/* Tooltip */}
       <div
-        className="fixed z-[101] bg-white rounded-xl shadow-xl border border-stone-200 p-5 w-80"
+        className="fixed z-[101] bg-card rounded-xl shadow-xl border border-border p-5 w-80"
         style={{ top: position.top, left: position.left }}
       >
         <button
           onClick={() => setTourActive(false)}
-          className="absolute top-3 right-3 text-stone-400 hover:text-stone-600"
+          className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X size={16} />
         </button>
 
-        <div className="text-xs text-stone-400 mb-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+          <Sparkles size={12} className="text-primary" />
           Step {tourStep + 1} of {steps.length}
         </div>
-        <h3 className="font-bold text-stone-900 mb-1">{step.title}</h3>
-        <p className="text-sm text-stone-600 mb-4">{step.description}</p>
+        <h3 className="font-bold text-foreground mb-1">{step.title}</h3>
+        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
+
+        {/* Progress dots */}
+        <div className="flex items-center gap-1.5 mb-4">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 rounded-full transition-all ${
+                i === tourStep ? 'w-6 bg-primary' : 'w-1.5 bg-muted'
+              }`}
+            />
+          ))}
+        </div>
 
         <div className="flex items-center justify-between">
           <button
             onClick={() => setTourActive(false)}
-            className="text-sm text-stone-500 hover:text-stone-700"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Skip tour
           </button>
@@ -101,7 +114,7 @@ export function QuickTour() {
             {!isFirst && (
               <button
                 onClick={() => setTourStep(tourStep - 1)}
-                className="p-1.5 rounded-lg border border-stone-300 hover:bg-stone-50"
+                className="p-1.5 rounded-lg border border-border hover:bg-secondary transition-colors"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -114,9 +127,10 @@ export function QuickTour() {
                   setTourStep(tourStep + 1);
                 }
               }}
-              className="px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700"
+              className="btn-primary"
             >
               {isLast ? 'Done' : 'Next'}
+              {!isLast && <ChevronRight size={14} className="ml-1" />}
             </button>
           </div>
         </div>
