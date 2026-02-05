@@ -1,0 +1,316 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Search, X, Check } from 'lucide-react';
+import { StarPicker } from '../components/StarRating';
+import { useApp } from '../context/AppContext';
+import { cultivars } from '../data/cultivars';
+
+function Chip({ label, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+        active
+          ? 'bg-green-100 text-green-800 border border-green-300'
+          : 'bg-stone-100 text-stone-600 border border-transparent hover:bg-stone-200'
+      }`}
+    >
+      {active && <Check size={13} className="inline mr-1 -mt-0.5" />}
+      {label}
+    </button>
+  );
+}
+
+export function ReviewFormPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { currentUser, addReview, searchCultivars } = useApp();
+
+  const preselectedId = searchParams.get('cultivar');
+  const preselected = preselectedId ? cultivars.find(c => c.id === preselectedId) : null;
+
+  const [cultivarSearch, setCultivarSearch] = useState(preselected?.name || '');
+  const [selectedCultivar, setSelectedCultivar] = useState(preselected || null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef(null);
+
+  const [year, setYear] = useState('2025');
+  const [overallRating, setOverallRating] = useState(0);
+  const [wouldGrowAgain, setWouldGrowAgain] = useState('');
+  const [startMethod, setStartMethod] = useState([]);
+  const [location, setLocation] = useState([]);
+  const [yieldRating, setYieldRating] = useState(0);
+  const [flavorRating, setFlavorRating] = useState(0);
+  const [diseaseRating, setDiseaseRating] = useState(0);
+  const [heatRating, setHeatRating] = useState(0);
+  const [notes, setNotes] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!currentUser) return;
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (cultivarSearch.trim().length >= 2 && !selectedCultivar) {
+      setSearchResults(searchCultivars(cultivarSearch));
+      setShowResults(true);
+    } else {
+      setSearchResults([]);
+      setShowResults(false);
+    }
+  }, [cultivarSearch, selectedCultivar, searchCultivars]);
+
+  if (!currentUser) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-stone-900 mb-4">Sign in to write a review</h1>
+        <p className="text-stone-500 mb-6">Pick a demo persona to get started</p>
+        <Link
+          to="/login"
+          className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+        >
+          Choose Persona
+        </Link>
+      </div>
+    );
+  }
+
+  function toggleArray(arr, setter, value) {
+    setter(arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]);
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+
+    if (!selectedCultivar) { setError('Please select a variety'); return; }
+    if (!overallRating) { setError('Please provide an overall rating'); return; }
+    if (!wouldGrowAgain) { setError('Please indicate if you would grow again'); return; }
+
+    const review = {
+      user_id: currentUser.id,
+      cultivar_id: selectedCultivar.id,
+      year: Number(year),
+      overall_rating: overallRating,
+      would_grow_again: wouldGrowAgain,
+      start_method: startMethod.length > 0 ? startMethod : undefined,
+      location: location.length > 0 ? location : undefined,
+      yield_rating: yieldRating || undefined,
+      flavor_rating: flavorRating || undefined,
+      disease_rating: diseaseRating || undefined,
+      heat_rating: heatRating || undefined,
+      notes: notes.trim() || undefined,
+    };
+
+    addReview(review);
+    setSubmitted(true);
+  }
+
+  if (submitted) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Check size={32} className="text-green-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-stone-900 mb-2">Review submitted!</h1>
+        <p className="text-stone-500 mb-6">Thanks for sharing your experience with {selectedCultivar.name}.</p>
+        <div className="flex items-center justify-center gap-4">
+          <Link
+            to={`/cultivar/${selectedCultivar.id}`}
+            className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors"
+          >
+            View {selectedCultivar.name}
+          </Link>
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setSelectedCultivar(null);
+              setCultivarSearch('');
+              setOverallRating(0);
+              setWouldGrowAgain('');
+              setStartMethod([]);
+              setLocation([]);
+              setYieldRating(0);
+              setFlavorRating(0);
+              setDiseaseRating(0);
+              setHeatRating(0);
+              setNotes('');
+            }}
+            className="px-5 py-2.5 rounded-lg border border-stone-300 font-medium hover:bg-stone-50 transition-colors text-stone-900"
+          >
+            Write another
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-stone-900 mb-1">Write a Review</h1>
+      <p className="text-stone-500 mb-6">Reviewing as {currentUser.name} &middot; {currentUser.county} County, Zone {currentUser.zone}</p>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-6 text-sm">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Cultivar picker */}
+        <div className="relative" ref={searchRef}>
+          <label className="block text-sm font-medium text-stone-700 mb-1">
+            Variety <span className="text-red-500">*</span>
+          </label>
+          {selectedCultivar ? (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-2.5">
+              <div>
+                <span className="font-medium text-stone-900">{selectedCultivar.name}</span>
+                <span className="text-sm text-stone-500 ml-2">{selectedCultivar.crop_type}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setSelectedCultivar(null); setCultivarSearch(''); }}
+                className="text-stone-400 hover:text-stone-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={cultivarSearch}
+                onChange={e => setCultivarSearch(e.target.value)}
+                placeholder="Search for a variety..."
+                className="w-full pl-10 pr-4 py-2.5 border border-stone-300 rounded-lg text-sm bg-white text-stone-900 focus:ring-2 focus:ring-green-500/40 focus:border-green-500 placeholder:text-stone-400"
+              />
+              {showResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-stone-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-64 overflow-y-auto">
+                  {searchResults.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => { setSelectedCultivar(c); setCultivarSearch(c.name); setShowResults(false); }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-green-50 flex items-center justify-between transition-colors"
+                    >
+                      <span className="font-medium text-stone-900">{c.name}</span>
+                      <span className="text-sm text-stone-500">{c.crop_type} &middot; {c.crop_subtype}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Year */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">
+            Growing Year <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={year}
+            onChange={e => setYear(e.target.value)}
+            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm bg-white text-stone-900 focus:ring-2 focus:ring-green-500/40 focus:border-green-500"
+          >
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+
+        {/* Overall rating */}
+        <div>
+          <StarPicker
+            value={overallRating}
+            onChange={setOverallRating}
+            label={<>Overall Rating <span className="text-red-500">*</span></>}
+          />
+        </div>
+
+        {/* Would grow again */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">
+            Would you grow this again? <span className="text-red-500">*</span>
+          </label>
+          <div className="flex gap-2">
+            {['Yes', 'Maybe', 'No'].map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setWouldGrowAgain(opt)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  wouldGrowAgain === opt
+                    ? opt === 'Yes' ? 'bg-green-100 text-green-800 border border-green-300'
+                      : opt === 'Maybe' ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-stone-100 text-stone-600 border border-transparent hover:bg-stone-200'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <hr className="border-stone-200" />
+
+        {/* Optional fields */}
+        <p className="text-sm text-stone-500 -mb-2">Optional details (help other gardeners!)</p>
+
+        {/* Start method */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">Start Method</label>
+          <div className="flex flex-wrap gap-2">
+            {['Direct seed', 'Transplant (home)', 'Transplant (purchased)'].map(m => (
+              <Chip key={m} label={m} active={startMethod.includes(m)} onClick={() => toggleArray(startMethod, setStartMethod, m)} />
+            ))}
+          </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">Growing Location</label>
+          <div className="flex flex-wrap gap-2">
+            {['Outdoor', 'High tunnel', 'Greenhouse', 'Container'].map(l => (
+              <Chip key={l} label={l} active={location.includes(l)} onClick={() => toggleArray(location, setLocation, l)} />
+            ))}
+          </div>
+        </div>
+
+        {/* Sub-ratings */}
+        <div className="grid grid-cols-2 gap-4">
+          <StarPicker value={yieldRating} onChange={setYieldRating} label="Yield" size={20} />
+          <StarPicker value={flavorRating} onChange={setFlavorRating} label="Flavor" size={20} />
+          <StarPicker value={diseaseRating} onChange={setDiseaseRating} label="Disease Resistance" size={20} />
+          <StarPicker value={heatRating} onChange={setHeatRating} label="Heat Tolerance" size={20} />
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Growing Notes</label>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value.slice(0, 1000))}
+            rows={4}
+            placeholder="Share your experience growing this variety in Utah..."
+            className="w-full border border-stone-300 rounded-lg px-3 py-2.5 text-sm bg-white text-stone-900 focus:ring-2 focus:ring-green-500/40 focus:border-green-500 resize-none placeholder:text-stone-400"
+          />
+          <p className="text-xs text-stone-400 mt-1">{notes.length}/1000</p>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+        >
+          Submit Review
+        </button>
+      </form>
+    </div>
+  );
+}
